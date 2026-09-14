@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model categories {
+  id                  Int               @id @default(autoincrement())
+  name                String            @db.VarChar(100)
+  transaction_type_id Int
+  user_id             String?           @db.Uuid
+  created_at          DateTime?         @default(now()) @db.Timestamp(6)
+  transaction_types   transaction_types @relation(fields: [transaction_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_category_type")
+  users               users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_category_user")
+  subcategories       subcategories[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model subcategories {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(100)
+  category_id  Int
+  user_id      String?        @db.Uuid
+  created_at   DateTime?      @default(now()) @db.Timestamp(6)
+  categories   categories     @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subcategory_category")
+  users        users?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subcategory_user")
+  transactions transactions[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model transaction_types {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique @db.VarChar(50)
+  categories categories[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model transactions {
+  id               Int           @id @default(autoincrement())
+  user_id          String        @db.Uuid
+  subcategory_id   Int
+  amount           Decimal       @db.Decimal(10, 2)
+  description      String?
+  transaction_date DateTime      @db.Date
+  created_at       DateTime?     @default(now()) @db.Timestamp(6)
+  subcategories    subcategories @relation(fields: [subcategory_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_transaction_subcategory")
+  users            users         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_transaction_user")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model users {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String          @db.VarChar(100)
+  email         String          @unique @db.VarChar(255)
+  date_of_birth DateTime?       @db.Date
+  password_hash String
+  created_at    DateTime?       @default(now()) @db.Timestamp(6)
+  categories    categories[]
+  subcategories subcategories[]
+  transactions  transactions[]
+}
