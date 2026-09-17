@@ -1,6 +1,6 @@
 import prisma from "../database.js";
 import { hashPassword } from "../utils/password.js";
-import { ConflictError, NotFoundError } from "../utils/error.js";
+import { BadRequestError, ConflictError, NotFoundError } from "../utils/error.js";
 
 
 /**
@@ -70,7 +70,7 @@ export async function createNewUser(user) {
         throw new ConflictError("Email already exists.");        
     }
 
-    const birthDate = new Date(user.date_of_birth);
+    const birthDate = new Date(user.dateOfBirth);
     const today = new Date();
 
     let age = today.getFullYear() - birthDate.getFullYear();
@@ -87,7 +87,7 @@ export async function createNewUser(user) {
 
     if(age < 16){
 
-        throw new Error("You aren't old enough to create an account.");
+        throw new BadRequestError("You aren't old enough to create an account.");
     }
 
     const passwordHash = await hashPassword(user.password);

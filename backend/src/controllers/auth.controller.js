@@ -1,4 +1,4 @@
-import { login, register } from "../services/auth.service.js";
+import { login, register, me } from "../services/auth.service.js";
 import { BadRequestError } from "../utils/error.js";
 
 export async function loginUser(req, res, next) {
@@ -42,6 +42,22 @@ export async function registerUser(req, res, next) {
 
         return res.status(201).json(user);
         
+    }
+    catch(error){
+
+        next(error);
+    }
+}
+
+export async function getMe(req, res, next) {
+
+    try {
+
+        const id = req.user.userID;
+
+        const user = await me(id);
+
+        return res.status(200).json(user);
     }
     catch(error){
 

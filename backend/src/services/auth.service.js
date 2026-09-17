@@ -1,6 +1,6 @@
 import prisma from "../database.js";
 import { comparePassword } from "../utils/password.js";
-import { UnauthorizedError } from "../utils/error.js";
+import { NotFoundError, UnauthorizedError } from "../utils/error.js";
 import { generateToken } from "../utils/jwt.js";
 import { createNewUser } from "./user.service.js";
 
@@ -52,4 +52,27 @@ export async function register(name, email, password, dateOfBirth) {
         user,
         token
     };
+}
+
+export async function me(userID) {
+    
+    const user = await prisma.users.findUnique({
+        where: {
+            id: userID
+        }
+    });
+
+    if(!user){
+
+        throw new NotFoundError("User not found.");
+    }
+
+    return {
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            dateOfBirth: user.date_of_birth
+        }
+    }
 }

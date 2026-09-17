@@ -1,6 +1,5 @@
-import { getAllUsers } from "../services/user.service.js";
-import { getUserByID } from "../services/user.service.js";
-import { createNewUser } from "../services/user.service.js";
+import { getAllUsers, getUserByID, createNewUser } from "../services/user.service.js";
+
 
 export async function getUsers(req, res, next){
 
