@@ -1,0 +1,1 @@
+import { ForbiddenError } from "../utils/error";
