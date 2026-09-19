@@ -1,11 +1,12 @@
 import jwt from "jsonwebtoken";
 
-export function generateToken(userID){
+export function generateToken(userID, role){
 
     return jwt.sign(
         {
 
-        userID: userID
+        userID: userID,
+        role: role
 
         },
         process.env.JWT_SECRET,

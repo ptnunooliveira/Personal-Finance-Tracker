@@ -15,10 +15,21 @@ export async function getAllUsers(){
             name: true,
             date_of_birth: true,
             created_at: true,
+            user_roles: {
+                select: {
+                    name: true
+                }
+            }
         }
     });
 
-    return users;
+    return users.map(user => ({
+        id: user.id,
+        name: user.name,
+        dateOfBirth: user.date_of_birth,
+        role: user.user_roles.name,
+        createdAt: user.created_at
+    }));
 };
 
 
@@ -39,7 +50,12 @@ export async function getUserByID(userID) {
             name: true,
             date_of_birth: true,
             email: true,
-            created_at: true
+            created_at: true,
+            user_roles: {
+                select: {
+                    name: true
+                }
+            }
         }
     });
 
@@ -48,7 +64,14 @@ export async function getUserByID(userID) {
         throw new NotFoundError("User not found.");
     }
 
-    return user;
+    return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        dateOfBirth: user.date_of_birth,
+        role: user.user_roles.name,
+        createdAt: user.created_at
+    };
 }
 
 
@@ -104,7 +127,12 @@ export async function createNewUser(user) {
             name: true,
             email: true,
             date_of_birth: true,
-            created_at: true
+            created_at: true,
+            user_roles: {
+                select: {
+                    name: true
+                }
+            }
         }
     });
 

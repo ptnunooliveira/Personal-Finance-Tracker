@@ -10,6 +10,9 @@ export async function login(email, password){
         where: {
             email: email
         },
+        include: {
+            user_roles: true
+        }
     });
 
     if(!userLogedIn){
@@ -22,13 +25,17 @@ export async function login(email, password){
         throw new UnauthorizedError("Incorrect credentials.");
     }
 
-    const token = generateToken(userLogedIn.id);
+    const token = generateToken(
+        userLogedIn.id,
+        userLogedIn.user_roles.name
+    );
 
     return{
         user: {
             id: userLogedIn.id,
             name: userLogedIn.name,
-            email: userLogedIn.email   
+            email: userLogedIn.email,
+            role: userLogedIn.user_roles.name
         },
 
         token: token
@@ -46,7 +53,10 @@ export async function register(name, email, password, dateOfBirth) {
 
     const user = await createNewUser(newUser);
 
-    const token = generateToken(user.id);
+    const token = generateToken(
+        user.id,
+        user.user_roles.name
+    );
 
     return{
         user,
@@ -59,6 +69,11 @@ export async function me(userID) {
     const user = await prisma.users.findUnique({
         where: {
             id: userID
+        },
+        include: {
+            user_roles: {
+                name: true
+            }
         }
     });
 
@@ -72,7 +87,8 @@ export async function me(userID) {
             id: user.id,
             name: user.name,
             email: user.email,
-            dateOfBirth: user.date_of_birth
+            dateOfBirth: user.date_of_birth,
+            role: user.user_roles.name
         }
     }
 }
