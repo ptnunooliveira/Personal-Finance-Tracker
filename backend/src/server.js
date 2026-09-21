@@ -1,8 +1,9 @@
 import express from "express";
 import cors from "cors";
 //import prisma from "./database.js";
-import userRoutes from "./routes/user.route.js";
-import authRoutes from "./routes/auth.route.js";
+import userRouter from "./routes/user.route.js";
+import authRouter from "./routes/auth.route.js";
+import categoriesRouter from "./routes/categories.route.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 
 const app = express();
@@ -38,8 +39,9 @@ app.use(express.json());
 // });
 
 
-app.use("/users", userRoutes);
-app.use("/auth", authRoutes);
+app.use("/users", userRouter);
+app.use("/auth", authRouter);
+app.use("/categories", categoriesRouter);
 
 app.use(errorHandler);
 
