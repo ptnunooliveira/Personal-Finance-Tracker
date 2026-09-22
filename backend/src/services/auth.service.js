@@ -42,16 +42,9 @@ export async function login(email, password){
     };
 }
 
-export async function register(name, email, password, dateOfBirth) {
+export async function register(user) {
     
-    const newUser = {
-        name,
-        email,
-        password,
-        dateOfBirth
-    };
-
-    const user = await createNewUser(newUser);
+    const newUser = await createNewUser(newUser);
 
     const token = generateToken(
         user.id,
@@ -59,7 +52,7 @@ export async function register(name, email, password, dateOfBirth) {
     );
 
     return{
-        user,
+        user: newUser,
         token
     };
 }
