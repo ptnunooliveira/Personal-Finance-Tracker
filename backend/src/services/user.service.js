@@ -38,7 +38,7 @@ export async function getAllUsers(){
  * @param {*} userID 
  * @returns required user with his details
  */
-export async function getUserByID(userID) {
+export async function getUserById(userID) {
     
     const user = await prisma.users.findUnique({ 
         where: {
@@ -80,7 +80,7 @@ export async function getUserByID(userID) {
  * @param {*} user 
  * @returns new user with all of his properties (except the password hash)
  */
-export async function createNewUser(user) {
+export async function createUser(user) {
     
     const existingUser = await prisma.users.findUnique({
         where: {

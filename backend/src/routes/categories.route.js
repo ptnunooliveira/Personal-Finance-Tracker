@@ -1,11 +1,15 @@
 import express from "express";
-import { getDefaultCategories, myCategories } from "../controllers/categories.controller.js";
 import { authenticate } from "../middleware/authentication.middleware.js";
+import { getMyCategories as getMyCategoriesController,
+    createPersonalizedCategory as createPersonalizedCategoryController
+} from "../controllers/categories.controller.js";
 
 const router = express.Router();
 
 // GET Routes
-router.get("/", authenticate, getDefaultCategories);
-router.get("/me", authenticate, myCategories);
+router.get("/", authenticate, getMyCategoriesController);
+
+// POST Routes
+router.post("/", authenticate, createPersonalizedCategoryController);
 
 export default router;

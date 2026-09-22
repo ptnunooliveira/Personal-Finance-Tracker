@@ -1,7 +1,9 @@
-import { login, register, me } from "../services/auth.service.js";
 import { BadRequestError } from "../utils/error.js";
+import { login as loginService,
+    register as registerService,
+    getMe as getMeService } from "../services/auth.service.js";
 
-export async function loginUser(req, res, next) {
+export async function login(req, res, next) {
     
     try{
 
@@ -12,7 +14,7 @@ export async function loginUser(req, res, next) {
             throw new BadRequestError("Email and password are required.");
         }
 
-        const result = await login(email, password);
+        const result = await loginService(email, password);
 
         return res.status(200).json(result);
     }
@@ -22,7 +24,7 @@ export async function loginUser(req, res, next) {
     }
 }
 
-export async function registerUser(req, res, next) {
+export async function register(req, res, next) {
     
     try{
 
@@ -33,12 +35,12 @@ export async function registerUser(req, res, next) {
             throw new BadRequestError("Passwords must match.");
         }
 
-        const user = await register (
+        const user = await registerService ({
             name,
             email,
             password,
             dateOfBirth
-        );
+        });
 
         return res.status(201).json(user);
         
@@ -55,7 +57,7 @@ export async function getMe(req, res, next) {
 
         const id = req.user.userID;
 
-        const user = await me(id);
+        const user = await getMeService(id);
 
         return res.status(200).json(user);
     }

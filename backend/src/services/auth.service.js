@@ -2,7 +2,7 @@ import prisma from "../database.js";
 import { comparePassword } from "../utils/password.js";
 import { NotFoundError, UnauthorizedError } from "../utils/error.js";
 import { generateToken } from "../utils/jwt.js";
-import { createNewUser } from "./user.service.js";
+import { createUser } from "./user.service.js";
 
 export async function login(email, password){
 
@@ -44,11 +44,11 @@ export async function login(email, password){
 
 export async function register(user) {
     
-    const newUser = await createNewUser(newUser);
+    const newUser = await createUser(user);
 
     const token = generateToken(
-        user.id,
-        user.user_roles.name
+        newUser.id,
+        newUser.user_roles.name
     );
 
     return{
@@ -57,7 +57,7 @@ export async function register(user) {
     };
 }
 
-export async function me(userID) {
+export async function getMe(userID) {
     
     const user = await prisma.users.findUnique({
         where: {
@@ -65,7 +65,9 @@ export async function me(userID) {
         },
         include: {
             user_roles: {
-                name: true
+                select: {
+                    name: true
+                }
             }
         }
     });

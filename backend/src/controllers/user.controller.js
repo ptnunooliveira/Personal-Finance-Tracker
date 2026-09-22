@@ -1,11 +1,14 @@
-import { getAllUsers, getUserByID, createNewUser } from "../services/user.service.js";
+import { getAllUsers as getAllUsersService,
+    getUserById as getUserByIdService,
+    createUser as createUserService
+} from "../services/user.service.js";
 
 
-export async function getUsers(req, res, next){
+export async function getAllUsers(req, res, next){
 
     try{
 
-        const users = await getAllUsers();
+        const users = await getAllUsersService();
 
         return res.status(200).json(users);
     }
@@ -16,11 +19,11 @@ export async function getUsers(req, res, next){
     }
 };
 
-export async function getUser(req, res, next) {
+export async function getUserById(req, res, next) {
 
     try{
 
-        const user = await getUserByID(req.params.id);
+        const user = await getUserByIdService(req.params.id);
 
         return res.status(200).json(user);
     }
@@ -35,7 +38,7 @@ export async function createUser(req, res, next) {
     try{
 
         const user = req.body;
-        const userCreated = await createNewUser(user);
+        const userCreated = await createUserService(user);
 
         return res.status(201).json(userCreated);
     }
