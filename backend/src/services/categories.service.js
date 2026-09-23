@@ -1,5 +1,6 @@
+import { urlencoded } from "express";
 import prisma from "../database.js";
-import { ConflictError } from "../utils/error.js";
+import { ConflictError, NotFoundError } from "../utils/error.js";
 
 // export async function getDefaultCategories(){
 
@@ -25,6 +26,9 @@ import { ConflictError } from "../utils/error.js";
 //         transactionType: category.transaction_types.name
 //     }));
 // };
+
+
+// #region GET
 
 export async function getMyCategories(userID){
 
@@ -56,6 +60,11 @@ export async function getMyCategories(userID){
         transactionType: category.transaction_types.name
     }));
 }
+
+//#endregion
+
+
+// #region POST
 
 export async function createPersonalizedCategory(category, userID) {
     
@@ -100,6 +109,7 @@ export async function createPersonalizedCategory(category, userID) {
     }
 }
 
+
 export async function createDefaultCategory(category) {
     
     const existingCategory = await prisma.categories.findFirst({
@@ -134,3 +144,120 @@ export async function createDefaultCategory(category) {
         transactionType: newCategory.transaction_types.name
     };
 }
+
+// #endregion
+
+
+// #region PATCH
+
+export async function updatePersonalizedCategory(category, userID) {
+    
+    const existingCategory = await prisma.categories.findFirst({
+        where: {
+            id: category.id,
+            user_id: userID
+        }
+    });
+
+    if(!existingCategory){
+
+        throw new NotFoundError("Category not found.");
+    }
+
+    const conflictingCategory = await prisma.categories.findFirst({
+        where: {
+            name: category.name,
+            OR: [
+                { user_id: null },
+                { user_id: userID }
+            ],
+            NOT: {
+                id: category.id
+            }
+        }
+    });
+
+    if(conflictingCategory){
+
+        throw new ConflictError("A category with this name already exists.");
+    }
+
+    const updatedCategory = await prisma.categories.update({
+        where: {
+            id: category.id
+        },
+        data: {
+            name: category.name,
+            transaction_type_id: category.transactionTypeId
+        },
+        select: {
+            name: true,
+            transaction_types: {
+                select: {
+                    name: true
+                }
+            }
+        }
+    });
+
+    return {
+        name: updatedCategory.name,
+        transactionType: updatedCategory.transaction_types.name
+    }
+}
+
+
+export async function updatedDefaultCategory(category) {
+
+    const existingCategory = await prisma.categories.findFirst({
+        where: {
+            id: category.id,
+            user_id: null
+        }
+    });
+    
+    if(!existingCategory){
+        
+        throw new NotFoundError("Category not found.");
+    }
+
+    const conflictingCategory = await prisma.categories.findFirst({
+        where: {
+            name: category.name,
+            user_id: null,
+            NOT: {
+                id: category.id
+            }
+        }
+    });
+
+    if(conflictingCategory){
+
+        throw new ConflictError("A category with this name already exists.");
+    }
+
+    const updatedCategory = await prisma.categories.update({
+        where: {
+            id: category.id
+        },
+        data: {
+            name: category.name,
+            transaction_type_id: category.transactionTypeId
+        },
+        select: {
+            name: true,
+            transaction_types: {
+                select: {
+                    name: true
+                }
+            }
+        }
+    });
+
+    return {
+        name: updatedCategory.name,
+        transactionType: updatedCategory.transaction_types.name
+    }
+}
+
+// #endregion
