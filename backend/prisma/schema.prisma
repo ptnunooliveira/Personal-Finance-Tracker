@@ -14,6 +14,7 @@ model categories {
   transaction_type_id Int
   user_id             String?           @db.Uuid
   created_at          DateTime?         @default(now()) @db.Timestamp(6)
+  deleted_at          DateTime?         @db.Timestamp(6)
   transaction_types   transaction_types @relation(fields: [transaction_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_category_type")
   users               users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_category_user")
   subcategories       subcategories[]
@@ -26,6 +27,7 @@ model subcategories {
   category_id  Int
   user_id      String?        @db.Uuid
   created_at   DateTime?      @default(now()) @db.Timestamp(6)
+  deleted_at   DateTime?      @db.Timestamp(6)
   categories   categories     @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subcategory_category")
   users        users?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subcategory_user")
   transactions transactions[]
@@ -47,6 +49,7 @@ model transactions {
   description      String?
   transaction_date DateTime      @db.Date
   created_at       DateTime?     @default(now()) @db.Timestamp(6)
+  deleted_at       DateTime?     @db.Timestamp(6)
   subcategories    subcategories @relation(fields: [subcategory_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_transaction_subcategory")
   users            users         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_transaction_user")
 }
@@ -59,11 +62,12 @@ model users {
   date_of_birth DateTime?       @db.Date
   password_hash String
   created_at    DateTime?       @default(now()) @db.Timestamp(6)
-  role_id       Int            @default(2)
+  role_id       Int             @default(2)
+  deleted_at    DateTime?       @db.Timestamp(6)
   categories    categories[]
   subcategories subcategories[]
   transactions  transactions[]
-  user_roles    user_roles     @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_roles    user_roles      @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.

@@ -10,6 +10,9 @@ import { BadRequestError, ConflictError, NotFoundError } from "../utils/error.js
 export async function getAllUsers(){
 
     const users = await prisma.users.findMany({
+        where: {
+            deleted_at: null
+        },
         select: {
             id: true,
             name: true,
@@ -42,7 +45,8 @@ export async function getUserById(userID) {
     
     const user = await prisma.users.findUnique({ 
         where: {
-            id: userID
+            id: userID,
+            deleted_at: null
         },
 
         select: {
@@ -84,7 +88,8 @@ export async function createUser(user) {
     
     const existingUser = await prisma.users.findUnique({
         where: {
-            email: user.email
+            email: user.email,
+            deleted_at: null
         }
     });
 

@@ -34,6 +34,7 @@ export async function getMyCategories(userID){
 
     const categories = await prisma.categories.findMany({
         where: {
+            deleted_at: null,
             OR: [
                 {
                     user_id: userID
@@ -71,13 +72,10 @@ export async function createPersonalizedCategory(category, userID) {
     const existingCategory = await prisma.categories.findFirst({
         where: {
             name: category.name,
+            deleted_at: null,
             OR:[
-                {
-                    user_id: null
-                },
-                {
-                    user_id: userID
-                }
+                { user_id: null },
+                { user_id: userID }
             ]
         }
     });
@@ -115,7 +113,8 @@ export async function createDefaultCategory(category) {
     const existingCategory = await prisma.categories.findFirst({
         where: {
             name: category.name,
-            user_id: null
+            user_id: null,
+            deleted_at: null
         }
     });
 
@@ -155,7 +154,8 @@ export async function updatePersonalizedCategory(category, userID) {
     const existingCategory = await prisma.categories.findFirst({
         where: {
             id: category.id,
-            user_id: userID
+            user_id: userID,
+            deleted_at: null
         }
     });
 
@@ -167,6 +167,7 @@ export async function updatePersonalizedCategory(category, userID) {
     const conflictingCategory = await prisma.categories.findFirst({
         where: {
             name: category.name,
+            deleted_at: null,
             OR: [
                 { user_id: null },
                 { user_id: userID }
