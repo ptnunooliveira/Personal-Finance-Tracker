@@ -1,6 +1,10 @@
-import { urlencoded } from "express";
-import prisma from "../database.js";
 import { ConflictError, NotFoundError } from "../utils/error.js";
+import { 
+    findActivePersonalizedCategory,
+    findConflictingCategory,
+    updateCategory,
+    findActiveDefaultCategory
+ } from "../repositories/categories.repository.js";
 
 // export async function getDefaultCategories(){
 
@@ -151,55 +155,19 @@ export async function createDefaultCategory(category) {
 
 export async function updatePersonalizedCategory(category, userID) {
     
-    const existingCategory = await prisma.categories.findFirst({
-        where: {
-            id: category.id,
-            user_id: userID,
-            deleted_at: null
-        }
-    });
-
+    const existingCategory = await findActivePersonalizedCategory(category.id, userID);
     if(!existingCategory){
 
         throw new NotFoundError("Category not found.");
     }
 
-    const conflictingCategory = await prisma.categories.findFirst({
-        where: {
-            name: category.name,
-            deleted_at: null,
-            OR: [
-                { user_id: null },
-                { user_id: userID }
-            ],
-            NOT: {
-                id: category.id
-            }
-        }
-    });
-
+    const conflictingCategory = await findConflictingCategory(category.id, userID, category.name);
     if(conflictingCategory){
 
         throw new ConflictError("A category with this name already exists.");
     }
 
-    const updatedCategory = await prisma.categories.update({
-        where: {
-            id: category.id
-        },
-        data: {
-            name: category.name,
-            transaction_type_id: category.transactionTypeId
-        },
-        select: {
-            name: true,
-            transaction_types: {
-                select: {
-                    name: true
-                }
-            }
-        }
-    });
+    const updatedCategory = await updateCategory(category.id, category.name, category.transactionTypeId);
 
     return {
         name: updatedCategory.name,
@@ -208,52 +176,21 @@ export async function updatePersonalizedCategory(category, userID) {
 }
 
 
-export async function updatedDefaultCategory(category) {
+export async function updateDefaultCategory(category) {
 
-    const existingCategory = await prisma.categories.findFirst({
-        where: {
-            id: category.id,
-            user_id: null
-        }
-    });
-    
+    const existingCategory = await findActiveDefaultCategory(category.id);
     if(!existingCategory){
         
         throw new NotFoundError("Category not found.");
     }
 
-    const conflictingCategory = await prisma.categories.findFirst({
-        where: {
-            name: category.name,
-            user_id: null,
-            NOT: {
-                id: category.id
-            }
-        }
-    });
-
+    const conflictingCategory = await findConflictingCategory(category.id, null, category.name);
     if(conflictingCategory){
 
         throw new ConflictError("A category with this name already exists.");
     }
 
-    const updatedCategory = await prisma.categories.update({
-        where: {
-            id: category.id
-        },
-        data: {
-            name: category.name,
-            transaction_type_id: category.transactionTypeId
-        },
-        select: {
-            name: true,
-            transaction_types: {
-                select: {
-                    name: true
-                }
-            }
-        }
-    });
+    const updatedCategory = await updateCategory(category.id, category.name, category.transactionTypeId);
 
     return {
         name: updatedCategory.name,
