@@ -3,7 +3,10 @@ import {
     findActivePersonalizedCategory,
     findConflictingCategory,
     updateCategory,
-    findActiveDefaultCategory
+    findActiveDefaultCategory,
+    createDefaultCategory as createDefaultCategoryRepository,
+    createPersonalizedCategory as createPersonalizedCategoryRepository,
+    findAllCategoriesByUser
  } from "../repositories/categories.repository.js";
 
 // export async function getDefaultCategories(){
@@ -36,28 +39,7 @@ import {
 
 export async function getMyCategories(userID){
 
-    const categories = await prisma.categories.findMany({
-        where: {
-            deleted_at: null,
-            OR: [
-                {
-                    user_id: userID
-                },
-                {
-                    user_id: null
-                }
-            ]
-        },
-        select: {
-            id: true,
-            name: true,
-            transaction_types: {
-                select: {
-                    name: true
-                }
-            }
-        }
-    });
+    const categories = await findAllCategoriesByUser(userID)
 
     return categories.map(category => ({
         id: category.id,
@@ -73,37 +55,13 @@ export async function getMyCategories(userID){
 
 export async function createPersonalizedCategory(category, userID) {
     
-    const existingCategory = await prisma.categories.findFirst({
-        where: {
-            name: category.name,
-            deleted_at: null,
-            OR:[
-                { user_id: null },
-                { user_id: userID }
-            ]
-        }
-    });
-
-    if(existingCategory){
+    const conflictingCategory = await findConflictingCategory(category, userID);
+    if(conflictingCategory){
 
         throw new ConflictError("A category with this name already exists.");
     }
 
-    const newCategory = await prisma.categories.create({
-        data: {
-            name: category.name,
-            transaction_type_id: category.transactionTypeId,
-            user_id: userID
-        },
-        select: {
-            name: true,
-            transaction_types: {
-                select: {
-                    name: true
-                }
-            }
-        }
-    });
+    const newCategory = await createPersonalizedCategoryRepository(category, userID)
 
     return {
         name: newCategory.name,
@@ -114,37 +72,17 @@ export async function createPersonalizedCategory(category, userID) {
 
 export async function createDefaultCategory(category) {
     
-    const existingCategory = await prisma.categories.findFirst({
-        where: {
-            name: category.name,
-            user_id: null,
-            deleted_at: null
-        }
-    });
-
-    if(existingCategory){
+    const conflictingCategory = await findConflictingCategory(category, null);
+    if(conflictingCategory){
 
         throw new ConflictError("A category with this name already exists.");
     }
 
-    const newCategory = await prisma.categories.create({
-        data: {
-            name: category.name,
-            transaction_type_id: category.transactionTypeId
-        },
-        select: {
-            name: true,
-            transaction_types: {
-                select: {
-                    name: true
-                }
-            }
-        }
-    });
+    const newCategory = await createDefaultCategoryRepository(category);
 
     return {
         name: newCategory.name,
-        transactionType: newCategory.transaction_types.name
+        transactionType: newCategory.transactionType
     };
 }
 
@@ -155,19 +93,19 @@ export async function createDefaultCategory(category) {
 
 export async function updatePersonalizedCategory(category, userID) {
     
-    const existingCategory = await findActivePersonalizedCategory(category.id, userID);
+    const existingCategory = await findActivePersonalizedCategory(category, userID);
     if(!existingCategory){
 
         throw new NotFoundError("Category not found.");
     }
 
-    const conflictingCategory = await findConflictingCategory(category.id, userID, category.name);
+    const conflictingCategory = await findConflictingCategory(category, userID);
     if(conflictingCategory){
 
         throw new ConflictError("A category with this name already exists.");
     }
 
-    const updatedCategory = await updateCategory(category.id, category.name, category.transactionTypeId);
+    const updatedCategory = await updateCategory(category);
 
     return {
         name: updatedCategory.name,
@@ -178,19 +116,19 @@ export async function updatePersonalizedCategory(category, userID) {
 
 export async function updateDefaultCategory(category) {
 
-    const existingCategory = await findActiveDefaultCategory(category.id);
+    const existingCategory = await findActiveDefaultCategory(category);
     if(!existingCategory){
         
         throw new NotFoundError("Category not found.");
     }
 
-    const conflictingCategory = await findConflictingCategory(category.id, null, category.name);
+    const conflictingCategory = await findConflictingCategory(category, null);
     if(conflictingCategory){
 
         throw new ConflictError("A category with this name already exists.");
     }
 
-    const updatedCategory = await updateCategory(category.id, category.name, category.transactionTypeId);
+    const updatedCategory = await updateCategory(category);
 
     return {
         name: updatedCategory.name,
