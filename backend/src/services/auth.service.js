@@ -1,41 +1,33 @@
-import prisma from "../database.js";
 import { comparePassword } from "../utils/password.js";
 import { NotFoundError, UnauthorizedError } from "../utils/error.js";
 import { generateToken } from "../utils/jwt.js";
 import { createUser } from "./user.service.js";
+import { findUserByEmail, findUserById } from "../repositories/users.repository.js";
 
 export async function login(email, password){
 
-    const userLogedIn = await prisma.users.findUnique({
-        where: {
-            email: email
-        },
-        include: {
-            user_roles: true
-        }
-    });
-
-    if(!userLogedIn){
+    const user = await findUserByEmail(email);
+    if(!user){
 
         throw new UnauthorizedError("Incorrect credentials.");
     }
 
-    if(!await comparePassword(password, userLogedIn.password_hash)){
+    if(!await comparePassword(password, user.password_hash)){
 
         throw new UnauthorizedError("Incorrect credentials.");
     }
 
     const token = generateToken(
-        userLogedIn.id,
-        userLogedIn.user_roles.name
+        user.id,
+        user.user_roles.name
     );
 
     return{
         user: {
-            id: userLogedIn.id,
-            name: userLogedIn.name,
-            email: userLogedIn.email,
-            role: userLogedIn.user_roles.name
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.user_roles.name
         },
 
         token: token
@@ -59,19 +51,7 @@ export async function register(user) {
 
 export async function getMe(userID) {
     
-    const user = await prisma.users.findUnique({
-        where: {
-            id: userID
-        },
-        include: {
-            user_roles: {
-                select: {
-                    name: true
-                }
-            }
-        }
-    });
-
+    const user = await findUserById(userID)
     if(!user){
 
         throw new NotFoundError("User not found.");

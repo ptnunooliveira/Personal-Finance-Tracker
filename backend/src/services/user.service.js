@@ -1,6 +1,9 @@
-import prisma from "../database.js";
 import { hashPassword } from "../utils/password.js";
 import { BadRequestError, ConflictError, NotFoundError } from "../utils/error.js";
+import { findUserByEmail,
+    findUserById,
+    createUser as createUserRepository
+} from "../repositories/users.repository.js";
 
 
 /**
@@ -43,26 +46,7 @@ export async function getAllUsers(){
  */
 export async function getUserById(userID) {
     
-    const user = await prisma.users.findUnique({ 
-        where: {
-            id: userID,
-            deleted_at: null
-        },
-
-        select: {
-            id: true,
-            name: true,
-            date_of_birth: true,
-            email: true,
-            created_at: true,
-            user_roles: {
-                select: {
-                    name: true
-                }
-            }
-        }
-    });
-
+    const user = await findUserById(userID);
     if(!user){
 
         throw new NotFoundError("User not found.");
@@ -86,13 +70,7 @@ export async function getUserById(userID) {
  */
 export async function createUser(user) {
     
-    const existingUser = await prisma.users.findUnique({
-        where: {
-            email: user.email,
-            deleted_at: null
-        }
-    });
-
+    const existingUser = await findUserByEmail(user.email);
     if(existingUser){
 
         throw new ConflictError("Email already exists.");        
@@ -120,26 +98,12 @@ export async function createUser(user) {
 
     const passwordHash = await hashPassword(user.password);
 
-    const newUser = await prisma.users.create({
-        data: {
-            name: user.name,
-            email: user.email,
-            date_of_birth: birthDate,
-            password_hash: passwordHash
-        },
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            date_of_birth: true,
-            created_at: true,
-            user_roles: {
-                select: {
-                    name: true
-                }
-            }
-        }
-    });
+    const userToCreate = {
+        name: user.name,
+        email: user.email,
+        date_of_birth: birthDate,
+        password_hash: passwordHash,
+    };
 
-    return newUser;
+    return await createUserRepository(userToCreate);
 }
