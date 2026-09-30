@@ -1,6 +1,7 @@
 import { getAllUsers as getAllUsersService,
     getUserById as getUserByIdService,
-    createUser as createUserService
+    createUser as createUserService,
+    softDeleteUser as softDeleteUserService
 } from "../services/user.service.js";
 
 
@@ -41,6 +42,25 @@ export async function createUser(req, res, next) {
         const userCreated = await createUserService(user);
 
         return res.status(201).json(userCreated);
+    }
+    catch(error){
+
+        next(error);
+    }
+}
+
+
+export async function softDeleteUser(req, res, next) {
+    
+    try{
+
+        const userId = req.user.userID;
+        
+        await softDeleteUserService(userId);
+
+        return res.status(200).json({
+            message: "User deleted successfully"
+        });
     }
     catch(error){
 

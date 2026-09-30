@@ -2,7 +2,9 @@ import { hashPassword } from "../utils/password.js";
 import { BadRequestError, ConflictError, NotFoundError } from "../utils/error.js";
 import { findUserByEmail,
     findUserById,
-    createUser as createUserRepository
+    createUser as createUserRepository,
+    findAllUsers,
+    softDeleteUser as softDeleteUserRepository
 } from "../repositories/users.repository.js";
 
 
@@ -12,22 +14,7 @@ import { findUserByEmail,
  */
 export async function getAllUsers(){
 
-    const users = await prisma.users.findMany({
-        where: {
-            deleted_at: null
-        },
-        select: {
-            id: true,
-            name: true,
-            date_of_birth: true,
-            created_at: true,
-            user_roles: {
-                select: {
-                    name: true
-                }
-            }
-        }
-    });
+    const users = await findAllUsers();
 
     return users.map(user => ({
         id: user.id,
@@ -106,4 +93,16 @@ export async function createUser(user) {
     };
 
     return await createUserRepository(userToCreate);
+}
+
+
+export async function softDeleteUser(userID) {
+    
+    const user = await findUserById(userID);
+    if(!user){
+
+        throw new NotFoundError("User not found.");
+    }
+
+    await softDeleteUserRepository(userID);
 }

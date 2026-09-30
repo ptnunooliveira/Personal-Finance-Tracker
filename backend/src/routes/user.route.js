@@ -4,7 +4,9 @@ import { authorize } from "../middleware/authorization.middleware.js";
 import { admin } from "../middleware/admin.middleware.js";
 import { getAllUsers as getAllUsersController,
     getUserById as getUserByIdController,
-    createUser as createUserController } from "../controllers/user.controller.js";
+    createUser as createUserController,
+    softDeleteUser as softDeleteUserController,
+} from "../controllers/user.controller.js";
 
 const router = express.Router();
 
@@ -14,5 +16,8 @@ router.get("/:id", authenticate, authorize, getUserByIdController);
 
 // POST Routes
 router.post("/", authenticate, admin, createUserController);
+
+// DELETE Routes
+router.delete("/", authenticate, softDeleteUserController);
 
 export default router;

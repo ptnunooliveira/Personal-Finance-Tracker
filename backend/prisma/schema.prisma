@@ -15,6 +15,8 @@ model categories {
   user_id             String?           @db.Uuid
   created_at          DateTime?         @default(now()) @db.Timestamp(6)
   deleted_at          DateTime?         @db.Timestamp(6)
+  deleted_reason_id   Int?
+  deleted_reasons     deleted_reasons?  @relation(fields: [deleted_reason_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_category_deleted_reason")
   transaction_types   transaction_types @relation(fields: [transaction_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_category_type")
   users               users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_category_user")
   subcategories       subcategories[]
@@ -22,15 +24,17 @@ model categories {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model subcategories {
-  id           Int            @id @default(autoincrement())
-  name         String         @db.VarChar(100)
-  category_id  Int
-  user_id      String?        @db.Uuid
-  created_at   DateTime?      @default(now()) @db.Timestamp(6)
-  deleted_at   DateTime?      @db.Timestamp(6)
-  categories   categories     @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subcategory_category")
-  users        users?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subcategory_user")
-  transactions transactions[]
+  id                Int              @id @default(autoincrement())
+  name              String           @db.VarChar(100)
+  category_id       Int
+  user_id           String?          @db.Uuid
+  created_at        DateTime?        @default(now()) @db.Timestamp(6)
+  deleted_at        DateTime?        @db.Timestamp(6)
+  deleted_reason_id Int?
+  categories        categories       @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subcategory_category")
+  deleted_reasons   deleted_reasons? @relation(fields: [deleted_reason_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subcategory_deleted_reason")
+  users             users?           @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_subcategory_user")
+  transactions      transactions[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -42,16 +46,18 @@ model transaction_types {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model transactions {
-  id               Int           @id @default(autoincrement())
-  user_id          String        @db.Uuid
-  subcategory_id   Int
-  amount           Decimal       @db.Decimal(10, 2)
-  description      String?
-  transaction_date DateTime      @db.Date
-  created_at       DateTime?     @default(now()) @db.Timestamp(6)
-  deleted_at       DateTime?     @db.Timestamp(6)
-  subcategories    subcategories @relation(fields: [subcategory_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_transaction_subcategory")
-  users            users         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_transaction_user")
+  id                Int              @id @default(autoincrement())
+  user_id           String           @db.Uuid
+  subcategory_id    Int
+  amount            Decimal          @db.Decimal(10, 2)
+  description       String?
+  transaction_date  DateTime         @db.Date
+  created_at        DateTime?        @default(now()) @db.Timestamp(6)
+  deleted_at        DateTime?        @db.Timestamp(6)
+  deleted_reason_id Int?
+  deleted_reasons   deleted_reasons? @relation(fields: [deleted_reason_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_transaction_deleted_reason")
+  subcategories     subcategories    @relation(fields: [subcategory_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_transaction_subcategory")
+  users             users            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_transaction_user")
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -75,4 +81,13 @@ model user_roles {
   id    Int     @id @default(autoincrement())
   name  String  @unique @db.VarChar(30)
   users users[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model deleted_reasons {
+  id            Int             @id @default(autoincrement())
+  name          String          @unique @db.VarChar(50)
+  categories    categories[]
+  subcategories subcategories[]
+  transactions  transactions[]
 }

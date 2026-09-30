@@ -25,7 +25,8 @@ export async function findUserById(userID) {
     
     return await prisma.users.findUnique({
         where: {
-            id: userID
+            id: userID,
+            deleted_at: null
         },
         select: {
             id: true,
@@ -63,4 +64,33 @@ export async function createUser(user) {
             }
         }
     });
+}
+
+
+export async function findAllUsers() {
+    
+    return await prisma.users.findMany({
+        where: {
+            deleted_at: null
+        },
+        select: {
+            id: true,
+            name: true,
+            date_of_birth: true,
+            created_at: true,
+            user_roles: {
+                select: {
+                    name: true
+                }
+            }
+        }
+    });
+}
+
+
+export async function softDeleteUser(userID) {
+    
+    await prisma.$executeRaw`
+        CALL soft_delete_user(${userID});
+    `
 }
