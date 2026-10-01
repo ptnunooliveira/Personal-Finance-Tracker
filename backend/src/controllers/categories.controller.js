@@ -3,7 +3,8 @@ import {
     createPersonalizedCategory as createPersonalizedCategoryService,
     createDefaultCategory as createDefaultCategoryService,
     updatePersonalizedCategory as updatePersonalizedCategoryService,
-    updatedDefaultCategory as updatedDefaultCategoryService
+    updatedDefaultCategory as updatedDefaultCategoryService,
+    softDeleteCategory as softDeleteCategoryService
 } from "../services/categories.service.js";
 
 
@@ -147,3 +148,30 @@ export async function updateDefaultCategory(req, res, next) {
 
 // #endregion
 
+
+// #region DELETE
+
+export async function softDeleteCategory(req, res, next) {
+    
+    try{
+
+        const categoryId = Number(req.params.id);
+        const userId = req.user.userID;
+
+        const category = {
+            id: categoryId
+        };
+
+        await softDeleteCategoryService(category, userId);
+
+        return res.status(200).json({
+            message: "Category deleted successfully."
+        });
+    }
+    catch(error){
+
+        next(error);
+    }
+}
+
+// #endregion

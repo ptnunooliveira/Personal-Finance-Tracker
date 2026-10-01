@@ -6,7 +6,8 @@ import {
     findActiveDefaultCategory,
     createDefaultCategory as createDefaultCategoryRepository,
     createPersonalizedCategory as createPersonalizedCategoryRepository,
-    findAllCategoriesByUser
+    findAllCategoriesByUser,
+    softDeleteCategory as softDeleteCategoryRepository
  } from "../repositories/categories.repository.js";
 
 // export async function getDefaultCategories(){
@@ -134,6 +135,22 @@ export async function updateDefaultCategory(category) {
         name: updatedCategory.name,
         transactionType: updatedCategory.transaction_types.name
     }
+}
+
+// #endregion
+
+
+// #region DELETE
+
+export async function softDeleteCategory(category, userId) {
+    
+    const existingCategory = await findActivePersonalizedCategory(category, userId);
+    if(!existingCategory){
+
+        throw new NotFoundError("Category not found.");
+    }
+
+    await softDeleteCategoryRepository(existingCategory.id);
 }
 
 // #endregion

@@ -131,3 +131,11 @@ export async function findAllCategoriesByUser(userID) {
         }
     });
 }
+
+
+export async function softDeleteCategory(categoryId) {
+    
+    await prisma.$executeRaw`
+        CALL soft_delete_category(${categoryId});
+    `
+}

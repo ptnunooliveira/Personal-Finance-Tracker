@@ -5,7 +5,8 @@ import { getMyCategories as getMyCategoriesController,
     createPersonalizedCategory as createPersonalizedCategoryController,
     createDefaultCategory as createDefaultCategoryController,
     updatePersonalizedCategory as updatePersonalizedCategoryController,
-    updateDefaultCategory as updatedDefaultCategoryController
+    updateDefaultCategory as updatedDefaultCategoryController,
+    softDeleteCategory as softDeleteCategoryController
 } from "../controllers/categories.controller.js";
 
 const router = express.Router();
@@ -20,5 +21,9 @@ router.post("/default", authenticate, admin, createDefaultCategoryController);
 // PATCH Routes
 router.patch("/:id", authenticate, updatePersonalizedCategoryController);
 router.patch("/default/:id", authenticate, admin, updatedDefaultCategoryController);
+
+// DELETE Routes
+router.delete("/:id", authenticate, softDeleteCategoryController);
+
 
 export default router;
