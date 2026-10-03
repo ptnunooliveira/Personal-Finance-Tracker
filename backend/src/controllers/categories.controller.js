@@ -4,7 +4,8 @@ import {
     createDefaultCategory as createDefaultCategoryService,
     updatePersonalizedCategory as updatePersonalizedCategoryService,
     updatedDefaultCategory as updatedDefaultCategoryService,
-    softDeleteCategory as softDeleteCategoryService
+    softDeleteCategory as softDeleteCategoryService,
+    getDeletedCategories as getDeletedCategoriesService
 } from "../services/categories.service.js";
 
 
@@ -35,6 +36,23 @@ export async function getMyCategories(req, res, next) {
         return res.status(200).json(categories);
     }
     
+    catch(error){
+
+        next(error);
+    }
+}
+
+
+export async function getDeletedCategories(req, res, next) {
+    
+    try{
+
+        const userId = req.user.userID;
+
+        const deletedCategories = await getDeletedCategoriesService(userId);
+
+        return res.status(200).json(deletedCategories);
+    }
     catch(error){
 
         next(error);

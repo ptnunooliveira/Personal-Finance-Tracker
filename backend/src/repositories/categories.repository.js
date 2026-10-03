@@ -25,7 +25,6 @@ export async function findActiveDefaultCategory(category) {
 }
 
 
-
 export async function findConflictingCategory(category, userId) {
     
     return await prisma.categories.findFirst({
@@ -138,4 +137,34 @@ export async function softDeleteCategory(categoryId) {
     await prisma.$executeRaw`
         CALL soft_delete_category(${categoryId});
     `
+}
+
+
+export async function getDeletedCategories(userId) {
+    
+    return await prisma.categories.findMany({
+        where: {
+            user_id: userId,
+            deleted_at: {
+                not: null
+            },
+            deleted_reasons:{
+                name: 'USER'
+            }
+        },
+        select: {
+            name: true,
+            transaction_types: {
+                select: {
+                    name: true
+                }
+            },
+            deleted_at: true,
+            deleted_reasons: {
+                select: {
+                    name: true
+                }
+            }
+        }
+    });
 }

@@ -6,13 +6,15 @@ import { getMyCategories as getMyCategoriesController,
     createDefaultCategory as createDefaultCategoryController,
     updatePersonalizedCategory as updatePersonalizedCategoryController,
     updateDefaultCategory as updatedDefaultCategoryController,
-    softDeleteCategory as softDeleteCategoryController
+    softDeleteCategory as softDeleteCategoryController,
+    getDeletedCategories as getDeletedCategoriesController
 } from "../controllers/categories.controller.js";
 
 const router = express.Router();
 
 // GET Routes
 router.get("/", authenticate, getMyCategoriesController);
+router.get("/deleted", authenticate, getDeletedCategoriesController);
 
 // POST Routes
 router.post("/", authenticate, createPersonalizedCategoryController);

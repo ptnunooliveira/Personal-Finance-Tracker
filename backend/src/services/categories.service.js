@@ -7,8 +7,10 @@ import {
     createDefaultCategory as createDefaultCategoryRepository,
     createPersonalizedCategory as createPersonalizedCategoryRepository,
     findAllCategoriesByUser,
-    softDeleteCategory as softDeleteCategoryRepository
+    softDeleteCategory as softDeleteCategoryRepository,
+    getDeletedCategories as getDeletedCategoriesRepository
  } from "../repositories/categories.repository.js";
+
 
 // export async function getDefaultCategories(){
 
@@ -46,6 +48,19 @@ export async function getMyCategories(userID){
         id: category.id,
         name: category.name,
         transactionType: category.transaction_types.name
+    }));
+}
+
+
+export async function getDeletedCategories(userId) {
+    
+    const deletedCategories = await getDeletedCategoriesRepository(userId);
+
+    return deletedCategories.map(category => ({
+        name: category.name,
+        transactionType: category.transaction_types.name,
+        deletedAt: category.deleted_at,
+        deleteReason: category.deleted_reasons.name
     }));
 }
 
